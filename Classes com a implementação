@@ -1,0 +1,439 @@
+## Classe DataProviderImpl
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class DataProviderFileImpl implements IDataProvider {
+    private List<Project> projects = new ArrayList<>();
+    private List<Offer> offers = new ArrayList<>();
+
+    @Override
+    public void storeProject(Project project) {
+        projects.add(project);
+    }
+
+    @Override
+    public void storeOffer(Offer offer) {
+        offers.add(offer);
+    }
+
+    @Override
+    public List<Offer> getOffersByPrice(double maxPrice) {
+        List<Offer> matchingOffers = new ArrayList<>();
+        for (Offer offer : offers) {
+            if (offer.getPrice() <= maxPrice) {
+                matchingOffers.add(offer);
+            }
+        }
+        return matchingOffers;
+    }
+
+
+
+
+## Classe IDataProvider
+
+import java.util.List;
+
+public interface IDataProvider {
+    void storeProject(Project project);
+    void storeOffer(Offer offer);
+    List<Offer> getOffersByPrice(double maxPrice);
+    Project getProjectById(int id);
+}
+
+
+
+## Classe ISolarCalculator
+
+public interface ISolarCalculator {
+    double calculateEnergy(double area, Climate climate, Environment environment);
+    double calculateCost(double area, double costPerSquareMeter, Environment environment);
+}
+
+    @Override
+    public Project getProjectById(int id) {
+        for (Project project : projects) {
+            if (project.getId() == id) {
+                return project;
+            }
+        }
+        return null; // Not found
+    }
+}
+
+
+## Classe SolarCalculator
+
+public class SolarCalculator implements ISolarCalculator {
+
+    @Override
+    public double calculateEnergy(double area, Climate climate, Environment environment) {
+        double efficiency = 1.0;
+        switch (climate) {
+            case DESERT:
+                efficiency += 0.2;
+                break;
+            case RAINY:
+                efficiency -= 0.1;
+                break;
+            case TEMPERATE:
+                efficiency += 0.05;
+                break;
+        }
+
+        switch (environment) {
+            case RURAL:
+                efficiency += 0.05;
+                break;
+            case URBAN:
+                efficiency -= 0.05;
+                break;
+        }
+
+        return area * efficiency * 0.15;  // Assume a solar constant
+    }
+
+    @Override
+    public double calculateCost(double area, double costPerSquareMeter, Environment environment) {
+        double costModifier = 1.0;
+        if (environment == Environment.URBAN) {
+            costModifier += 0.1;
+        }
+        return area * 1500.0 * costModifier;
+    }
+}
+
+
+## Classe ISimulation
+
+public interface ISimulation {
+    SimulationResult simulateProject(Project project);
+}
+
+
+
+## Classe Simulation
+
+public class Simulation implements ISimulation {
+    private SolarCalculator solarCalculator;
+
+    public Simulation(SolarCalculator calculator) {
+        this.solarCalculator = calculator;
+    }
+
+    @Override
+    public SimulationResult simulateProject(Project project) {
+        double generatedEnergy = solarCalculator.calculateEnergy(project.getOperationalArea(), project.getClimate(), project.getEnvironment());
+        double estimatedCost = solarCalculator.calculateCost(project.getOperationalArea(), 20, project.getEnvironment());
+        boolean isAffordable = estimatedCost <= project.getMaxBudget();
+
+        return new SimulationResult(generatedEnergy, estimatedCost, isAffordable);
+    }
+}
+
+
+
+
+## Classe Offer
+
+public class Offer extends Entity {
+    private double price;
+    private double generation;
+    private String company;
+
+    public Offer(int id, double price, double generation, String company) {
+        super(id);
+        this.price = price;
+        this.generation = generation;
+        this.company = company;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public double getGeneration() {
+        return generation;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+}
+
+
+
+
+## Classe ISimulationResult
+
+public interface ISimulationResult {
+    double getGeneratedEnergy();
+    double getEstimatedCost();
+    boolean isAffordable();
+}
+
+
+
+
+
+
+## Classe SimulationResult
+
+public class SimulationResult implements ISimulationResult {
+    private double generatedEnergy;
+    private double estimatedCost;
+    private boolean isAffordable;
+
+    public SimulationResult(double generatedEnergy, double estimatedCost, boolean isAffordable) {
+        this.generatedEnergy = generatedEnergy;
+        this.estimatedCost = estimatedCost;
+        this.isAffordable = isAffordable;
+    }
+
+    @Override
+    public double getGeneratedEnergy() {
+        return generatedEnergy;
+    }
+
+    @Override
+    public double getEstimatedCost() {
+        return estimatedCost;
+    }
+
+    @Override
+    public boolean isAffordable() {
+        return isAffordable;
+    }
+}
+
+
+
+## Classe IUser
+
+public interface IUser {
+    String getName();
+    void setName(String name);
+    String getEmail();
+    void setEmail(String email);
+    String getPassword();
+    void setPassword(String password);
+}
+
+
+## Classe User
+
+public class User extends Entity implements IUser {
+    private String name;
+    private String email;
+    private String password;
+
+    public User(int id, String name, String email, String password) {
+        super(id);
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+
+
+
+
+## Classe Entity
+
+public abstract class Entity {
+    protected int id;
+
+    public Entity(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+}
+
+
+
+## Classe Project
+
+public class Project extends Entity implements IProject {
+    private double operationalArea;
+    private Environment environment;
+    private double averageConsumption;
+    private double maxBudget;
+    private Climate climate;
+
+    public Project(int id, double operationalArea, Environment environment, double averageConsumption, double maxBudget, Climate climate) {
+        super(id);
+        this.operationalArea = operationalArea;
+        this.environment = environment;
+        this.averageConsumption = averageConsumption;
+        this.maxBudget = maxBudget;
+        this.climate = climate;
+    }
+
+    @Override
+    public double getOperationalArea() {
+        return operationalArea;
+    }
+
+    @Override
+    public void setOperationalArea(double operationalArea) {
+        this.operationalArea = operationalArea;
+    }
+
+    @Override
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    @Override
+    public Climate getClimate() {
+        return climate;
+    }
+
+    @Override
+    public double getAverageConsumption() {
+        return averageConsumption;
+    }
+
+    @Override
+    public double getMaxBudget() {
+        return maxBudget;
+    }
+}
+
+
+
+
+## Classe IProject
+
+public interface IProject {
+    double getOperationalArea();
+    void setOperationalArea(double operationalArea);
+    Environment getEnvironment();
+    Climate getClimate();
+    double getAverageConsumption();
+    double getMaxBudget();
+}
+
+
+
+
+## Enum
+
+public enum Environment {
+    RURAL, URBAN
+}
+
+
+## Enum
+
+public enum Climate {
+    RAINY, DESERT, TEMPERATE
+}
+
+
+## Main
+
+import java.util.List;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        IDataProvider dataProvider = new DataProviderFileImpl();
+
+     
+        System.out.print("Digite a área operacional (m²): ");
+        double operationalArea = scanner.nextDouble();
+
+        System.out.print("Escolha o ambiente (RURAL, URBAN): ");
+        String environmentInput = scanner.next().toUpperCase();
+        Environment environment = Environment.valueOf(environmentInput);
+
+        System.out.print("Digite o consumo médio (kWh): ");
+        double averageConsumption = scanner.nextDouble();
+
+        System.out.print("Digite o orçamento máximo: ");
+        double maxBudget = scanner.nextDouble();
+
+        System.out.print("Escolha o clima (RAINY, DESERT, TEMPERATE): ");
+        String climateInput = scanner.next().toUpperCase();
+        Climate climate = Climate.valueOf(climateInput);
+
+        // Criando uma instância de Project com os dados fornecidos
+        Project project = new Project(1, operationalArea, environment, averageConsumption, maxBudget, climate);
+        dataProvider.storeProject(project);
+
+        // Criando uma instância de SolarCalculator e Simulation
+        SolarCalculator calculator = new SolarCalculator();
+        Simulation simulation = new Simulation(calculator);
+
+        // Simulando o projeto
+        SimulationResult result = simulation.simulateProject(project);
+
+        // Exibindo os resultados da simulação
+        System.out.println("Energia Gerada: " + result.getGeneratedEnergy() + " kWh");
+        System.out.println("Custo Estimado: R$ " + result.getEstimatedCost());
+        System.out.println("É acessível dentro do orçamento: " + (result.isAffordable() ? "Sim" : "Não"));
+
+        // Adicionando uma oferta
+        System.out.print("Digite o preço da oferta: ");
+        double offerPrice = scanner.nextDouble();
+        System.out.print("Digite a geração da oferta (kWh): ");
+        double offerGeneration = scanner.nextDouble();
+        System.out.print("Digite o nome da empresa: ");
+        String company = scanner.next();
+
+        Offer offer = new Offer(1, offerPrice, offerGeneration, company);
+        dataProvider.storeOffer(offer);
+
+        // Recuperando ofertas com parâmetros
+        System.out.print("Digite o preço máximo das ofertas: ");
+        double maxOfferPrice = scanner.nextDouble();
+
+        List<Offer> offers = dataProvider.getOffersByPrice(maxOfferPrice);
+        System.out.println("Ofertas correspondentes:");
+        for (Offer matchingOffer : offers) {
+            System.out.println("Empresa: " + matchingOffer.getCompany() + ", Preço: R$ " + matchingOffer.getPrice() + ", Geração: " + matchingOffer.getGeneration() + " kWh");
+        }
+
+        scanner.close();
+    }
+}
